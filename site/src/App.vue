@@ -10,32 +10,32 @@
   </div>
 </template>
 
-<script>
-import { database, ref, onValue, set } from './Firebase.js'
+<script setup>
+import { ref, onMounted } from 'vue'
+import { database } from '@/firebase'
+import { ref as dbRef, onValue, set } from 'firebase/database'
 
-export default {
-  data() {
-    return {
-      counter: 0,
-      counterRef: ref(database, 'counter'),
+const counter = ref(0)
+
+onMounted(() => {
+  const counterRef = dbRef(database, 'counter')
+  
+  onValue(counterRef, (snapshot) => {
+    const data = snapshot.val()
+    if (data !== null) {
+      counter.value = data
     }
-  },
-  created() {
-    // Escuta atualizações em tempo real
-    onValue(this.counterRef, (snapshot) => {
-      if (snapshot.exists()) {
-        this.counter = snapshot.val()
-      }
-    })
-  },
-  methods: {
-    increment() {
-      set(this.counterRef, this.counter + 1)
-    },
-    decrement() {
-      set(this.counterRef, this.counter - 1)
-    },
-  },
+  })
+})
+
+function increment() {
+  const counterRef = dbRef(database, 'counter')
+  set(counterRef, counter.value + 1)
+}
+
+function decrement() {
+  const counterRef = dbRef(database, 'counter')
+  set(counterRef, counter.value - 1)
 }
 </script>
 
